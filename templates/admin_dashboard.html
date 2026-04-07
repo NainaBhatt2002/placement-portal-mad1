@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Management Panel</h>
+        <p>Welcome, Administrator! Use the sections below to manage the portal.</p>
+
+        <hr>
+
+        <div class="mb-4">
+            <div class="card_header bg-warning text-dark">
+                <h3 class="mb-0">Pending Company Registrtions</h3>
+            </div>
+            <div class="card-body">
+                {% if pending_companies %}
+                    <table class="table table-hover">
+                        <thread>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thread>
+                        <tbody>
+                            {% for company in pending_companies %}
+                            <tr>
+                                <td>{{ company.name }}</td>
+                                <td>{{ company.email }}</td>
+                                <td>
+                                    <form action="{{ url_for('approve_company', company_id=company.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No pending company registrations at the moment.</p>
+                {% endif %}
+            </div>
+{% endblock %}

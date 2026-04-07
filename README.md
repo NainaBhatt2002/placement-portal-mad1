@@ -1,38 +1,82 @@
-# Placement Portal Application (MAD-I)
+# PLACEMENT PORTAL SYSTEM
 
-## Project Description
+A full-stack web application built using Flask that streamlines the placement process for students and administrators. The platform enables students to explore opportunities, apply for jobs, and track their application status, while providing administrators with tools to manage the entire workflow efficiently.
 
-This project is a **Placement Portal Application** developed as part of the **Modern Application Development I (MAD-I)** course.
-The application simulates a campus placement system where students can apply for jobs, companies can post job openings, and an administrator manages and approves the overall process.
+### FEATURES
 
-The system is designed to simplify the placement workflow by providing separate dashboards and functionalities for **Admin, Company, and Student users**.
+### Student
 
-## Main Features
+* Register and log in securely
+* Browse available job opportunities
+* Apply to companies
+* Track application status
 
-* Student registration and profile management
-* Company registration and job posting
-* Admin approval for companies and job postings
-* Job search and application system for students
-* Application status tracking (Applied, Shortlisted, Rejected, etc.)
-* Role-based dashboards for Admin, Company, and Student
+### Admin
 
-## Technologies Used
+* Add, update, and delete job postings
+* Manage student records
+* View applications
+* Oversee placement activities
 
-* **Backend:** Python, Flask
-* **Database:** SQLite
-* **Frontend:** HTML, CSS (Bootstrap for styling)
-* **Version Control:** Git and GitHub
+## Tech Stack
+
+* Backend: Flask (Python)
+* Database: SQLite
+* Frontend: HTML, CSS, Bootstrap
+* ORM: SQLAlchemy
 
 ## Project Structure
 
-The project will include backend logic, database models, and frontend templates to implement the placement workflow.
+placement-portal/
+│── app.py
+│── models.py
+│── templates/
+│── static/
+│── instance/
+│   └── placement.db
+│── requirements.txt
+│── README.md
 
-Main components:
+## Installation and Setup
 
-* Admin management system
-* Company job management system
-* Student job application system
-* Placement and application tracking
+### 1. Clone the repository
+
+git clone https://github.com/your-username/placement-portal.git
+cd placement-portal
+
+### 2. Create a virtual environment
+
+python -m venv venv
+source venv/bin/activate and On Windows: venv\Scripts\activate
+
+### 3. Install dependencies
+
+pip install -r requirements.txt
+
+### 4. Run the application
+
+python app.py or flask run
+
+## Usage
+
+Open your browser and go to: http://127.0.0.1:5000/ 
+
+You can register as a student or log in as an administrator to begin using the platform.
+
+## Screenshots
+
+Include screenshots of key pages such as the login page, dashboard, and job listings.
+
+## Future Improvements
+
+* Implement secure password hashing
+* Add email notifications
+* Enable resume uploads
+* Improve user interface and overall user experience
+
+## Contributing
+
+Contributions are welcome. You can fork the repository and submit a pull request with your changes.
 
 ## Author
 
