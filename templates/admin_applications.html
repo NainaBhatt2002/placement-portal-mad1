@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Manage Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4 p-md-5 bg-white rounded-4">
+            <h2 class="fw-bold mb-4">Manage Applications</h2>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mt-3">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>App ID</th>
+                            <th>Student</th>
+                            <th>Role</th>
+                            <th>Company</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td class="fw-bold">{{ app.id }}</td>
+                            <td>{{ app.student.name }}</td>
+                            <td>{{ app.drive.job_title }}</td>
+                            <td>{{ app.drive.company.name }}</td>
+                            <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if app.status == 'Selected' %}
+                                <span class="badge bg-success shadow-sm">Selected</span>
+                                {% elif app.status == 'Rejected' %}
+                                <span class="badge bg-danger shadow-sm">Rejected</span>
+                                {% elif app.status == 'Shortlisted' %}
+                                <span class="badge bg-info shadow-sm">Shortlisted</span>
+                                {% else %}
+                                <span class="badge bg-secondary shadow-sm">{{ app.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No applications found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

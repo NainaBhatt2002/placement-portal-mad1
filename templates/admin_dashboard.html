@@ -2,42 +2,133 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Admin Management Panel</h>
-        <p>Welcome, Administrator! Use the sections below to manage the portal.</p>
-
-        <hr>
-
-        <div class="mb-4">
-            <div class="card_header bg-warning text-dark">
-                <h3 class="mb-0">Pending Company Registrtions</h3>
+<div class="container mt-5 mb-5">
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-primary shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Total Companies</h5>
+                    <p class="card-text display-4">{{ total_companies }}</p>
+                </div>
             </div>
-            <div class="card-body">
-                {% if pending_companies %}
-                    <table class="table table-hover">
-                        <thread>
-                            <tr>
-                                <th>Company Name</th>
-                                <th>Email</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thread>
-                        <tbody>
-                            {% for company in pending_companies %}
-                            <tr>
-                                <td>{{ company.name }}</td>
-                                <td>{{ company.email }}</td>
-                                <td>
-                                    <form action="{{ url_for('approve_company', company_id=company.id) }}" method="POST">
-                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-success shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Total Students</h5>
+                    <p class="card-text display-4">{{ total_students }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-dark shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Placement Drives</h5>
+                    <p class="card-text display-4">{{ total_drives }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-danger shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Applications</h5>
+                    <p class="card-text display-4">{{ total_applications }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-12 mb-4 mb-lg-0 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-header bg-dark text-white rounded-top-4 p-3 font-weight-bold">
+                    <h5 class="mb-0">Pending Company Registrations</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if pending_companies %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>Company Name</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for company in pending_companies %}
+                                    <tr>
+                                        <td class="fw-bold">{{ company.name }}</td>
+                                        <td>{{ company.email }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <form action="{{ url_for('approve_company', company_id=company.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-success btn-sm shadow-sm">Approve</button>
+                                                </form>
+                                                <form action="{{ url_for('reject_company', company_id=company.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm shadow-sm">Reject</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     {% else %}
-                    <p class="text-muted">No pending company registrations at the moment.</p>
-                {% endif %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-0 fs-5">No pending company registrations at the moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
+        </div>
+
+        <div class="col-md-12 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-header bg-dark text-white rounded-top-4 p-3 font-weight-bold">
+                    <h5 class="mb-0">Pending Job Postings</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if pending_drives %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Company</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for drive in pending_drives %}
+                                    <tr>
+                                        <td class="fw-bold">{{ drive.job_title }}</td>
+                                        <td>{{ drive.company.name }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <form action="{{ url_for('approve_drive', drive_id=drive.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-success btn-sm shadow-sm">Approve</button>
+                                                </form>
+                                                <form action="{{ url_for('reject_drive', drive_id=drive.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm shadow-sm">Reject</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                         <div class="text-center py-5">
+                            <p class="text-muted mb-0 fs-5">No pending job postings at the moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

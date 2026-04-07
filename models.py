@@ -16,6 +16,7 @@ class Company(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)                    
     hr_contact = db.Column(db.String(50), nullable=False)
+    industry = db.Column(db.String(100), nullable=True)
     website = db.Column(db.String(150), nullable=True)
     is_approved = db.Column(db.Boolean, default=False)
     is_blacklisted = db.Column(db.Boolean, default=False)
@@ -43,7 +44,7 @@ class PlacementDrive(db.Model):
     job_description = db.Column(db.Text, nullable=False)
     eligibility_criteria = db.Column(db.Text, nullable=True)
     application_deadline = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(20), default='Pending') # Statuses: Pending, Approved, Closed
+    status = db.Column(db.String(20), default='Pending')
 
     applications = db.relationship('Application', backref='drive', lazy=True, cascade="all, delete-orphan")
 
@@ -53,7 +54,7 @@ class Application(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
     drive_id = db.Column(db.Integer, db.ForeignKey('placement_drive.id'), nullable=False)
     application_date = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='Applied') # Statuses: Applied, Shortlisted, Selected, Rejected
+    status = db.Column(db.String(20), default='Applied')
     
     placement = db.relationship('Placement', backref='application', uselist=False, cascade="all, delete-orphan")
 

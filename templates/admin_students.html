@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Manage Students{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4 p-md-5 bg-white rounded-4">
+            <h2 class="fw-bold mb-4">Manage Students</h2>
+            
+            <div class="mb-4 bg-light p-3 rounded">
+                <form action="{{ url_for('manage_students') }}" method="GET" class="d-flex">
+                    <input type="text" name="q" class="form-control form-control-lg me-2" placeholder="Search by name, ID, email or contact" value="{{ q }}">
+                    <button type="submit" class="btn btn-primary btn-lg px-4">Search</button>
+                    <a href="{{ url_for('manage_students') }}" class="btn btn-outline-secondary btn-lg ms-2">Clear</a>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mt-3">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Resume</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td class="fw-bold">{{ student.id }}</td>
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.contact }}</td>
+                            <td>
+                                {% if student.resume_path %}
+                                <a href="/static/{{ student.resume_path }}" target="_blank" class="text-decoration-none fw-semibold">View</a>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if student.is_blacklisted %}
+                                <span class="badge bg-danger">Blacklisted</span>
+                                {% else %}
+                                <span class="badge bg-success">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form action="{{ url_for('toggle_student_blacklist', student_id=student.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-sm shadow-sm {% if student.is_blacklisted %}btn-success{% else %}btn-outline-danger{% endif %}">
+                                        {% if student.is_blacklisted %}
+                                        Activate
+                                        {% else %}
+                                        Blacklist
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No students found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
