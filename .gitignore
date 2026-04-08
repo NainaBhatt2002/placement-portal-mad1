@@ -78,3 +78,6 @@ dmypy.json
 
 # Secrets
 secrets.json
+
+# Custom
+project_statement.txt

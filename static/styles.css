@@ -1,7 +1,7 @@
 body {
   font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
-  background-color: #f8f9fa; /* Light gray to make white cards pop */
-  color: #212529;
+  background-color: #e0eaff;
+  color: #23272c;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

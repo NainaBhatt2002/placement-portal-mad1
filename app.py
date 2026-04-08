@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Admin, Student, Company, PlacementDrive, Application
 import os
 from sqlalchemy import or_
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -171,9 +172,9 @@ def approve_drive(drive_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
     drive = PlacementDrive.query.get_or_404(drive_id)
-    drive.status = 'Approved'
+    drive.status = 'Active'
     db.session.commit()
-    flash(f'Job posting "{drive.job_title}" approved.', 'success')
+    flash(f'Job posting "{drive.job_title}" activated.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/reject_drive/<int:drive_id>', methods=['POST'])
@@ -287,7 +288,123 @@ def company_dashboard():
         flash('Your account has been blacklisted, removed, or is no longer approved.', 'error')
         return redirect(url_for('login'))
         
-    return render_template('company_dashboard.html')
+    drives = PlacementDrive.query.filter_by(company_id=company.id).order_by(PlacementDrive.id.desc()).all()
+    total_drives = len(drives)
+    active_drives = sum(1 for d in drives if d.status == 'Active')
+    
+    drive_ids = [d.id for d in drives]
+    applications = Application.query.filter(Application.drive_id.in_(drive_ids)).all() if drive_ids else []
+    total_applications = len(applications)
+    shortlisted = sum(1 for a in applications if a.status == 'Shortlisted')
+    selected = sum(1 for a in applications if a.status == 'Selected')
+        
+    return render_template('company_dashboard.html',
+        company=company,
+        drives=drives,
+        total_drives=total_drives,
+        active_drives=active_drives,
+        total_applications=total_applications,
+        shortlisted=shortlisted,
+        selected=selected
+    )
+
+@app.route('/company/drive/new', methods=['GET', 'POST'])
+def company_post_drive():
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+        
+    company = Company.query.get(session.get('user_id'))
+    if not company or not company.is_approved:
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        job_title = request.form.get('job_title')
+        job_description = request.form.get('job_description')
+        skills_required = request.form.get('skills_required')
+        experience_required = request.form.get('experience_required')
+        salary_range = request.form.get('salary_range')
+        eligibility_criteria = request.form.get('eligibility_criteria')
+        deadline_str = request.form.get('application_deadline')
+        
+        # Validations
+        if not job_title or not job_description or not deadline_str:
+            flash('Required fields are missing.', 'error')
+            return redirect(url_for('company_post_drive'))
+            
+        try:
+            deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format.', 'error')
+            return redirect(url_for('company_post_drive'))
+            
+        new_drive = PlacementDrive(
+            company_id=company.id,
+            job_title=job_title,
+            job_description=job_description,
+            skills_required=skills_required,
+            experience_required=experience_required,
+            salary_range=salary_range,
+            eligibility_criteria=eligibility_criteria,
+            application_deadline=deadline,
+            status='Pending'
+        )
+        db.session.add(new_drive)
+        db.session.commit()
+        flash('Job position created successfully. It is now pending admin approval.', 'success')
+        return redirect(url_for('company_dashboard'))
+        
+    return render_template('company_post_drive.html')
+
+@app.route('/company/drive/<int:drive_id>/status', methods=['POST'])
+def company_update_drive_status(drive_id):
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+    drive = PlacementDrive.query.get_or_404(drive_id)
+    if drive.company_id != session.get('user_id'):
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('company_dashboard'))
+        
+    new_status = request.form.get('status')
+    if new_status in ['Active', 'Closed']:
+        drive.status = new_status
+        db.session.commit()
+        flash('Job posting status updated.', 'success')
+    return redirect(url_for('company_dashboard'))
+
+@app.route('/company/drive/<int:drive_id>/applications')
+def company_drive_applications(drive_id):
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+    drive = PlacementDrive.query.get_or_404(drive_id)
+    if drive.company_id != session.get('user_id'):
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('company_dashboard'))
+        
+    applications = Application.query.filter_by(drive_id=drive.id).all()
+    return render_template('company_drive_applications.html', drive=drive, applications=applications)
+
+@app.route('/company/application/<int:app_id>/status', methods=['POST'])
+def company_update_app_status(app_id):
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+    application = Application.query.get_or_404(app_id)
+    if application.drive.company_id != session.get('user_id'):
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('company_dashboard'))
+        
+    new_status = request.form.get('status')
+    if new_status in ['Shortlisted', 'Selected', 'Rejected', 'Applied']:
+        application.status = new_status
+        db.session.commit()
+        flash(f'Application status updated to {new_status}.', 'success')
+    return redirect(url_for('company_drive_applications', drive_id=application.drive_id))
+
+@app.route('/company/student/<int:student_id>')
+def company_student_profile(student_id):
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+    student = Student.query.get_or_404(student_id)
+    return render_template('company_student_profile.html', student=student)
 
 if __name__ == '__main__':
     app.run(debug=True)

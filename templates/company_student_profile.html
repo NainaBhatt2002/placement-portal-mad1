@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Profile - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white p-4 rounded-top-4">
+                    <h3 class="mb-0">{{ student.name }}</h3>
+                    <p class="mb-0 text-white-50">Student Profile</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="mb-4 text-center">
+                        {% if student.is_blacklisted %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Warning:</strong> This student is currently blacklisted.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="text-muted" style="width: 30%;">Full Name</th>
+                                <td class="fw-bold">{{ student.name }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Email</th>
+                                <td><a href="mailto:{{ student.email }}">{{ student.email }}</a></td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Contact</th>
+                                <td>{{ student.contact }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Resume</th>
+                                <td>
+                                    {% if student.resume_path %}
+                                    <a href="/static/resumes/{{ student.resume_path }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        View Resume
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted fst-italic">No resume uploaded</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="card-footer bg-light p-3 text-center rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary" onclick="window.close();">Close Window</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
