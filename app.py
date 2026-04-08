@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from models import db, Admin, Student, Company, PlacementDrive, Application
 import os
+import uuid
 from sqlalchemy import or_
 from datetime import datetime
 
@@ -11,6 +13,10 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'ourlittlesecret'
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads', 'resumes')
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 5 MB limit
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize the db
 db.init_app(app)
@@ -53,7 +59,18 @@ def register():
         
         try:
             if role == 'student':
-                new_user = Student(name=name, email=email, password=hashed_password, contact='N/A')
+                resume_file = request.files.get('resume')
+                resume_filename = None
+                if resume_file and resume_file.filename != '':
+                    if resume_file.filename.lower().endswith('.pdf'):
+                        original_filename = secure_filename(resume_file.filename)
+                        resume_filename = f"{uuid.uuid4().hex}_{original_filename}"
+                        resume_file.save(os.path.join(app.config['UPLOAD_FOLDER'], resume_filename))
+                    else:
+                        flash('Invalid file format. Only PDF allowed.', 'error')
+                        return redirect(url_for('register'))
+
+                new_user = Student(name=name, email=email, password=hashed_password, contact='N/A', resume_path=resume_filename)
             elif role == 'company':
                 new_user = Company(name=name, email=email, password=hashed_password, hr_contact='N/A')
             else:
@@ -272,7 +289,117 @@ def student_dashboard():
         flash('Your account has been blacklisted or removed.', 'error')
         return redirect(url_for('login'))
         
-    return render_template('student_dashboard.html')
+    applications = Application.query.filter_by(student_id=student.id).all()
+    total_applications = len(applications)
+    shortlisted = sum(1 for a in applications if a.status == 'Shortlisted')
+    selected = sum(1 for a in applications if a.status == 'Selected')
+    rejected = sum(1 for a in applications if a.status == 'Rejected')
+    
+    recent_applications = Application.query.filter_by(student_id=student.id).order_by(Application.application_date.desc()).limit(5).all()
+        
+    return render_template('student_dashboard.html', student=student, total_applications=total_applications, 
+                           shortlisted=shortlisted, selected=selected, rejected=rejected, 
+                           recent_applications=recent_applications)
+
+@app.route('/student/profile', methods=['GET', 'POST'])
+def student_profile():
+    if session.get('role') != 'student':
+        return redirect(url_for('login'))
+        
+    student = Student.query.get(session.get('user_id'))
+    if request.method == 'POST':
+        student.contact = request.form.get('contact')
+        student.education = request.form.get('education')
+        student.skills = request.form.get('skills')
+        
+        resume_file = request.files.get('resume')
+        if resume_file and resume_file.filename != '':
+            if resume_file.filename.lower().endswith('.pdf'):
+                original_filename = secure_filename(resume_file.filename)
+                resume_filename = f"{uuid.uuid4().hex}_{original_filename}"
+                resume_file.save(os.path.join(app.config['UPLOAD_FOLDER'], resume_filename))
+                # Optional: remove old resume if it exists
+                if student.resume_path:
+                    old_path = os.path.join(app.config['UPLOAD_FOLDER'], student.resume_path)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                student.resume_path = resume_filename
+            else:
+                flash('Invalid file format. Only PDF allowed.', 'error')
+                return redirect(url_for('student_profile'))
+                
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('student_profile'))
+        
+    return render_template('student_profile.html', student=student)
+
+@app.route('/student/jobs')
+def student_jobs():
+    if session.get('role') != 'student':
+        return redirect(url_for('login'))
+    
+    q = request.args.get('q', '')
+    query = PlacementDrive.query.filter_by(status='Active')
+    if q:
+        query = query.join(Company).filter(
+            or_(
+                PlacementDrive.job_title.ilike(f'%{q}%'),
+                PlacementDrive.skills_required.ilike(f'%{q}%'),
+                Company.name.ilike(f'%{q}%')
+            )
+        )
+    drives = query.all()
+    
+    # Get IDs of drives student has already applied to
+    student_id = session.get('user_id')
+    applied_drive_ids = [a.drive_id for a in Application.query.filter_by(student_id=student_id).all()]
+    
+    return render_template('student_jobs.html', drives=drives, applied_drive_ids=applied_drive_ids, q=q)
+
+@app.route('/student/apply/<int:drive_id>', methods=['POST'])
+def student_apply(drive_id):
+    if session.get('role') != 'student':
+        return redirect(url_for('login'))
+        
+    student = Student.query.get(session.get('user_id'))
+    if not student.resume_path:
+        flash('Please update your profile and upload a resume before applying.', 'error')
+        return redirect(url_for('student_profile'))
+        
+    drive = PlacementDrive.query.get_or_404(drive_id)
+    if drive.status != 'Active':
+        flash('Job posting is no longer active.', 'error')
+        return redirect(url_for('student_jobs'))
+        
+    existing_app = Application.query.filter_by(student_id=student.id, drive_id=drive.id).first()
+    if existing_app:
+        flash('You have already applied for this job.', 'error')
+        return redirect(url_for('student_jobs'))
+        
+    application = Application(student_id=student.id, drive_id=drive.id)
+    db.session.add(application)
+    db.session.commit()
+    
+    flash('Application submitted successfully!', 'success')
+    return redirect(url_for('student_applications'))
+
+@app.route('/student/applications')
+def student_applications():
+    if session.get('role') != 'student':
+        return redirect(url_for('login'))
+        
+    applications = Application.query.filter_by(student_id=session.get('user_id')).order_by(Application.application_date.desc()).all()
+    return render_template('student_applications.html', applications=applications)
+
+@app.route('/uploads/resumes/<filename>')
+def serve_resume(filename):
+    if session.get('role') not in ['student', 'company', 'admin']:
+        return redirect(url_for('login'))
+    
+    # We could add more strict access control (e.g. only company can view if student applied), 
+    # but for now restrict to logged-in users only.
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 #Company routes
 

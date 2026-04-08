@@ -30,6 +30,8 @@ class Student(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     contact = db.Column(db.String(15), nullable=False)
+    education = db.Column(db.Text, nullable=True)
+    skills = db.Column(db.String(255), nullable=True)
     resume_path = db.Column(db.String(255), nullable=True)
     is_blacklisted = db.Column(db.Boolean, default=False)
 

@@ -2,5 +2,70 @@
 {% block title %}Student Dashboard{% endblock %}
 
 {% block content %}
-Student
+<div class="container mt-5 mb-5">
+    <h2 class="mb-4 fw-bold">Welcome, {{ student.name }}!</h2>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-primary shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Total Applied</h5>
+                    <p class="card-text display-4">{{ total_applications }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-success shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Shortlisted</h5>
+                    <p class="card-text display-4">{{ shortlisted }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-dark shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Selected</h5>
+                    <p class="card-text display-4">{{ selected }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-danger shadow border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold">Rejected</h5>
+                    <p class="card-text display-4">{{ rejected }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-header bg-dark text-white rounded-top-4 p-3 font-weight-bold">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-group list-group-flush rounded-3">
+                        {% for app in recent_applications %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-1">
+                            <span>Applied for <strong>{{ app.drive.job_title }}</strong> at <strong>{{ app.drive.company.name }}</strong></span>
+                            <span class="badge 
+                                {% if app.status == 'Applied' %}bg-secondary
+                                {% elif app.status == 'Shortlisted' %}bg-success text-white
+                                {% elif app.status == 'Selected' %}bg-warning text-dark
+                                {% elif app.status == 'Rejected' %}bg-danger
+                                {% else %}bg-primary{% endif %}
+                            rounded-pill px-3">{{ app.status }}</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted text-center py-4 fs-5 border-0">No recent activity.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

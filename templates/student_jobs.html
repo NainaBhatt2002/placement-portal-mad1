@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Find Jobs{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Active Job Postings</h2>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="/student/jobs" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search by company, job title, or skills..." value="{{ q }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a href="/student/jobs" class="btn btn-outline-secondary ms-2">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for drive in drives %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="card-title fw-bold">{{ drive.job_title }}</h5>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <h6 class="card-subtitle mb-3 text-muted">{{ drive.company.name }}</h6>
+                    
+                    <p class="card-text mb-1"><strong>Skills:</strong> {{ drive.skills_required or 'N/A' }}</p>
+                    <p class="card-text mb-1"><strong>Experience:</strong> {{ drive.experience_required or 'N/A' }}</p>
+                    <p class="card-text mb-1"><strong>Salary:</strong> {{ drive.salary_range or 'N/A' }}</p>
+                    <p class="card-text mb-3"><strong>Deadline:</strong> {{ drive.application_deadline.strftime('%Y-%m-%d') }}</p>
+                    
+                    <button class="btn btn-outline-primary btn-sm mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#desc{{ drive.id }}" aria-expanded="false" aria-controls="desc{{ drive.id }}">
+                        View Description & Eligibility
+                    </button>
+                    
+                    <div class="collapse" id="desc{{ drive.id }}">
+                        <div class="card card-body bg-light mb-3">
+                            <p class="mb-1"><strong>Description:</strong></p>
+                            <p class="mb-2">{{ drive.job_description }}</p>
+                            <p class="mb-1"><strong>Eligibility Criteria:</strong></p>
+                            <p class="mb-0">{{ drive.eligibility_criteria or 'N/A' }}</p>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="card-footer bg-white border-0 text-end">
+                    {% if drive.id in applied_drive_ids %}
+                        <button class="btn btn-secondary disabled">Applied</button>
+                    {% else %}
+                        <form method="POST" action="/student/apply/{{ drive.id }}" onsubmit="return confirm('Are you sure you want to apply for this job?');" class="d-inline">
+                            <button type="submit" class="btn btn-primary">Apply Now</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                No active job postings found matching your criteria.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

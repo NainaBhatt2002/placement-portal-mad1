@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-4">My Profile</h3>
+                    <form method="POST" action="/student/profile" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Full Name</label>
+                            <input type="text" class="form-control" value="{{ student.name }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email Address</label>
+                            <input type="email" class="form-control" value="{{ student.email }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Contact Number</label>
+                            <input type="text" name="contact" class="form-control" value="{{ student.contact }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Education</label>
+                            <textarea name="education" class="form-control" rows="3" placeholder="College, Degree, Year, CGPA...">{{ student.education or '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Skills</label>
+                            <input type="text" name="skills" class="form-control" value="{{ student.skills or '' }}" placeholder="Python, Java, React...">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-muted">Update Resume (PDF only)</label>
+                            {% if student.resume_path %}
+                                <div class="mb-2">
+                                    <a href="/uploads/resumes/{{ student.resume_path }}" target="_blank" class="btn btn-sm btn-outline-secondary">View Current Resume</a>
+                                </div>
+                            {% endif %}
+                            <input type="file" name="resume" class="form-control" accept=".pdf">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

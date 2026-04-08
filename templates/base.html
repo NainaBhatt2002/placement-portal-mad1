@@ -78,6 +78,39 @@
   </nav>
   {% endif %}
 
+  {% if session.get('role') == 'student' and request.endpoint not in ['login', 'register'] %}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold fs-4" href="/student/dashboard">HireX</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#studentNavbar"
+        aria-controls="studentNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="studentNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="/student/dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/student/profile">My Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/student/jobs">Find Jobs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/student/applications">My Applications</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+
   <div class="main-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}

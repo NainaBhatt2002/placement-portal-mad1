@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h2>My Applications</h2>
+    <hr>
+    
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td><strong>{{ app.drive.job_title }}</strong></td>
+                            <td>{{ app.drive.company.name }}</td>
+                            <td>{{ app.application_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <span class="badge rounded-pill 
+                                    {% if app.status == 'Applied' %}bg-secondary
+                                    {% elif app.status == 'Shortlisted' %}bg-info text-dark
+                                    {% elif app.status == 'Selected' %}bg-success
+                                    {% elif app.status == 'Rejected' %}bg-danger
+                                    {% else %}bg-primary{% endif %}
+                                ">{{ app.status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-0" role="alert">
+                You haven't applied to any jobs yet. <a href="/student/jobs" class="alert-link">Browse active jobs</a>.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
