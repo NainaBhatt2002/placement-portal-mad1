@@ -11,11 +11,11 @@
                     <form method="POST" action="/company/profile">
                         <div class="mb-3">
                             <label class="form-label text-muted">Company Name</label>
-                            <input type="text" class="form-control" value="{{ company.name }}" disabled>
+                            <input type="text" class="form-control" value="{{ company.user.name }}" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted">Email Address</label>
-                            <input type="email" class="form-control" value="{{ company.email }}" disabled>
+                            <input type="email" class="form-control" value="{{ company.user.email }}" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted">HR Contact Name / Info</label>

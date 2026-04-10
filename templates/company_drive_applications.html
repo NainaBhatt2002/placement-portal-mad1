@@ -30,7 +30,7 @@
                         {% for app in applications %}
                         <tr>
                             <td>
-                                <strong>{{ app.student.name }}</strong>
+                                <strong>{{ app.student.user.name }}</strong>
                                 <br>
                                 <a href="/company/student/{{ app.student_id }}" class="text-decoration-none text-info small" target="_blank">View Profile</a>
                             </td>

@@ -23,7 +23,7 @@
                         {% for app in applications %}
                         <tr>
                             <td><strong>{{ app.drive.job_title }}</strong></td>
-                            <td>{{ app.drive.company.name }}</td>
+                            <td>{{ app.drive.company.user.name }}</td>
                             <td>{{ app.application_date.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
                                 <span class="badge rounded-pill 

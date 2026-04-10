@@ -11,11 +11,11 @@
                     <form method="POST" action="/student/profile" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label text-muted">Full Name</label>
-                            <input type="text" class="form-control" value="{{ student.name }}" disabled>
+                            <input type="text" class="form-control" value="{{ student.user.name }}" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted">Email Address</label>
-                            <input type="email" class="form-control" value="{{ student.email }}" disabled>
+                            <input type="email" class="form-control" value="{{ student.user.email }}" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted">Contact Number</label>

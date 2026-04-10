@@ -23,9 +23,9 @@
                         {% for app in applications %}
                         <tr>
                             <td class="fw-bold">{{ app.id }}</td>
-                            <td>{{ app.student.name }}</td>
+                            <td>{{ app.student.user.name }}</td>
                             <td>{{ app.drive.job_title }}</td>
-                            <td>{{ app.drive.company.name }}</td>
+                            <td>{{ app.drive.company.user.name }}</td>
                             <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
                             <td>
                                 {% if app.status == 'Selected' or app.status == 'Placed' %}

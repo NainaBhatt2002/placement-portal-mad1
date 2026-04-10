@@ -23,7 +23,7 @@
                         {% for drive in drives %}
                         <tr>
                             <td class="fw-bold">{{ drive.id }}</td>
-                            <td>{{ drive.company.name }}</td>
+                            <td>{{ drive.company.user.name }}</td>
                             <td>{{ drive.job_title }}</td>
                             <td>{{ drive.application_deadline.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>

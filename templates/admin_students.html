@@ -9,7 +9,7 @@
             
             <div class="mb-4 bg-light p-3 rounded">
                 <form action="{{ url_for('manage_students') }}" method="GET" class="d-flex">
-                    <input type="text" name="q" class="form-control form-control-lg me-2" placeholder="Search by name, ID, email or contact" value="{{ q }}">
+                    <input type="text" name="q" class="form-control form-control-lg me-2" placeholder="Search by name, email or contact" value="{{ q }}">
                     <button type="submit" class="btn btn-primary btn-lg px-4">Search</button>
                     <a href="{{ url_for('manage_students') }}" class="btn btn-outline-secondary btn-lg ms-2">Clear</a>
                 </form>
@@ -32,8 +32,8 @@
                         {% for student in students %}
                         <tr>
                             <td class="fw-bold">{{ student.id }}</td>
-                            <td>{{ student.name }}</td>
-                            <td>{{ student.email }}</td>
+                            <td>{{ student.user.name }}</td>
+                            <td>{{ student.user.email }}</td>
                             <td>{{ student.contact }}</td>
                             <td>
                                 {% if student.resume_path %}

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from models import db, Admin, Student, Company, PlacementDrive, Application
+from models import db, User, Admin, Student, Company, PlacementDrive, Application
 import os
 import uuid
 from sqlalchemy import or_
@@ -27,9 +27,12 @@ def setup_database():
         db.create_all()
         
         # Creating Admin 
-        admin_exists = Admin.query.filter_by(username='admin').first()
-        if not admin_exists:
-            default_admin = Admin(username='admin', password= generate_password_hash('adminpassword'))
+        user_exists = User.query.filter_by(role='admin').first()
+        if not user_exists:
+            admin_user = User(name='admin', email='admin@admin.com', password=generate_password_hash('adminpassword'), role='admin')
+            db.session.add(admin_user)
+            db.session.flush() # To get admin_user.id
+            default_admin = Admin(user_id=admin_user.id)
             db.session.add(default_admin)
             db.session.commit()
             print("Database initialized and predefined Admin seeded successfully.")
@@ -58,6 +61,15 @@ def register():
         hashed_password = generate_password_hash(password)
         
         try:
+            user_exists = User.query.filter_by(email=email).first()
+            if user_exists:
+                flash('Email already registered.', 'error')
+                return redirect(url_for('register'))
+                
+            new_user = User(name=name, email=email, password=hashed_password, role=role)
+            db.session.add(new_user)
+            db.session.flush()
+            
             if role == 'student':
                 resume_file = request.files.get('resume')
                 resume_filename = None
@@ -70,14 +82,14 @@ def register():
                         flash('Invalid file format. Only PDF allowed.', 'error')
                         return redirect(url_for('register'))
 
-                new_user = Student(name=name, email=email, password=hashed_password, contact='N/A', resume_path=resume_filename)
+                new_profile = Student(user_id=new_user.id, contact='N/A', resume_path=resume_filename)
             elif role == 'company':
-                new_user = Company(name=name, email=email, password=hashed_password, hr_contact='N/A')
+                new_profile = Company(user_id=new_user.id, hr_contact='N/A')
             else:
                 flash('Invalid role selected!', 'error')
                 return redirect(url_for('register'))
                 
-            db.session.add(new_user)
+            db.session.add(new_profile)
             db.session.commit()
             
             if role == 'company':
@@ -99,45 +111,45 @@ def login():
         username_or_email = request.form.get('username')
         password = request.form.get('password')
         
-        # Check Admin
-        admin = Admin.query.filter_by(username=username_or_email).first()
-        if admin and (admin.password == password or check_password_hash(admin.password, password)):
-            session['user_id'] = admin.id
+        user = User.query.filter(
+            or_(
+                User.email == username_or_email,
+                User.name == username_or_email
+            )
+        ).first()
+
+        if user and check_password_hash(user.password, password):
+            if user.role == 'admin':
+                session['user_id'] = user.admin_profile.id
+                session['role'] = 'admin'
+                return redirect(url_for('admin_dashboard'))
+                
+            elif user.role == 'student':
+                student = user.student_profile
+                if getattr(student, 'is_blacklisted', False):
+                    flash('Your account has been blacklisted. Please contact administration.', 'error')
+                    return redirect(url_for('login'))
+                session['user_id'] = student.id
+                session['role'] = 'student'
+                return redirect(url_for('student_dashboard'))
+                
+            elif user.role == 'company':
+                company = user.company_profile
+                if getattr(company, 'is_blacklisted', False):
+                    flash('Your account has been blacklisted. Please contact administration.', 'error')
+                    return redirect(url_for('login'))
+                if not company.is_approved:
+                    flash('Your account is pending admin approval.', 'error')
+                    return redirect(url_for('login'))
+                session['user_id'] = company.id
+                session['role'] = 'company'
+                return redirect(url_for('company_dashboard'))
+                
+        # Legacy behavior check for plain text admin password if needed
+        elif user and user.password == password and user.role == 'admin':
+            session['user_id'] = user.admin_profile.id
             session['role'] = 'admin'
             return redirect(url_for('admin_dashboard'))
-            
-        # Check Student
-        student = Student.query.filter(
-            or_(
-                Student.email == username_or_email,
-                Student.name == username_or_email
-            )
-        ).first()
-        if student and check_password_hash(student.password, password):
-            if getattr(student, 'is_blacklisted', False):
-                flash('Your account has been blacklisted. Please contact administration.', 'error')
-                return redirect(url_for('login'))
-            session['user_id'] = student.id
-            session['role'] = 'student'
-            return redirect(url_for('student_dashboard'))
-            
-        # 3. Check Company
-        company = Company.query.filter(
-            or_(
-                Company.email == username_or_email,
-                Company.name == username_or_email
-            )
-        ).first()
-        if company and check_password_hash(company.password, password):
-            if getattr(company, 'is_blacklisted', False):
-                flash('Your account has been blacklisted. Please contact administration.', 'error')
-                return redirect(url_for('login'))
-            if not company.is_approved:
-                flash('Your account is pending admin approval.', 'error')
-                return redirect(url_for('login'))
-            session['user_id'] = company.id
-            session['role'] = 'company'
-            return redirect(url_for('company_dashboard'))
             
         flash('Invalid credentials. Please try again.', 'error')
         return redirect(url_for('login'))
@@ -153,11 +165,12 @@ def approve_company(company_id):
         return redirect(url_for('login'))
     
     company = Company.query.get_or_404(company_id)
+    company_name = company.user.name
     
     company.is_approved = True
     db.session.commit()
         
-    flash(f'Company "{company.name}" has been approved successfully!.', 'success')
+    flash(f'Company "{company_name}" has been approved successfully!.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/dashboard')
@@ -183,9 +196,10 @@ def reject_company(company_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
     company = Company.query.get_or_404(company_id)
-    db.session.delete(company)
+    company_name = company.user.name
+    db.session.delete(company.user)
     db.session.commit()
-    flash(f'Company "{company.name}" registration rejected.', 'success')
+    flash(f'Company "{company_name}" registration rejected.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/approve_drive/<int:drive_id>', methods=['POST'])
@@ -214,10 +228,10 @@ def manage_students():
         return redirect(url_for('login'))
     q = request.args.get('q', '')
     if q:
-        students = Student.query.filter(
+        students = Student.query.join(User).filter(
             or_(
-                Student.name.ilike(f'%{q}%'),
-                Student.email.ilike(f'%{q}%'),
+                User.name.ilike(f'%{q}%'),
+                User.email.ilike(f'%{q}%'),
                 Student.contact.ilike(f'%{q}%')
             )
         ).all()
@@ -240,9 +254,9 @@ def manage_companies():
         return redirect(url_for('login'))
     q = request.args.get('q', '')
     if q:
-        companies = Company.query.filter(
+        companies = Company.query.join(User).filter(
             or_(
-                Company.name.ilike(f'%{q}%'),
+                User.name.ilike(f'%{q}%'),
                 Company.industry.ilike(f'%{q}%')
             )
         ).all()
@@ -346,11 +360,11 @@ def student_jobs():
     q = request.args.get('q', '')
     query = PlacementDrive.query.filter_by(status='Active')
     if q:
-        query = query.join(Company).filter(
+        query = query.join(Company).join(User, Company.user_id == User.id).filter(
             or_(
                 PlacementDrive.job_title.ilike(f'%{q}%'),
                 PlacementDrive.skills_required.ilike(f'%{q}%'),
-                Company.name.ilike(f'%{q}%')
+                User.name.ilike(f'%{q}%')
             )
         )
     drives = query.all()
