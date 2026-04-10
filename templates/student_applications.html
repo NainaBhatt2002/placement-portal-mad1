@@ -29,7 +29,8 @@
                                 <span class="badge rounded-pill 
                                     {% if app.status == 'Applied' %}bg-secondary
                                     {% elif app.status == 'Shortlisted' %}bg-info text-dark
-                                    {% elif app.status == 'Selected' %}bg-success
+                                    {% elif app.status == 'Interview' %}bg-warning text-dark
+                                    {% elif app.status == 'Selected' or app.status == 'Placed' %}bg-success
                                     {% elif app.status == 'Rejected' %}bg-danger
                                     {% else %}bg-primary{% endif %}
                                 ">{{ app.status }}</span>

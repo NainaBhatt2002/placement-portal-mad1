@@ -80,7 +80,11 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             
-            flash('Registration successful! Please log in.', 'success')
+            if role == 'company':
+                flash('Registration successful! Please wait for Admin Approval to log in.', 'success')
+            else:
+                flash('Registration successful! Please log in.', 'success')
+                
             return redirect(url_for('login'))
         except Exception as e:
             db.session.rollback()
@@ -396,13 +400,27 @@ def student_applications():
 def serve_resume(filename):
     if session.get('role') not in ['student', 'company', 'admin']:
         return redirect(url_for('login'))
-    
-    # We could add more strict access control (e.g. only company can view if student applied), 
-    # but for now restrict to logged-in users only.
+
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 #Company routes
 
+@app.route('/company/profile', methods=['GET', 'POST'])
+def company_profile():
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+        
+    company = Company.query.get(session.get('user_id'))
+    if request.method == 'POST':
+        company.hr_contact = request.form.get('hr_contact')
+        company.industry = request.form.get('industry')
+        company.website = request.form.get('website')
+        
+        db.session.commit()
+        flash('Company profile updated successfully!', 'success')
+        return redirect(url_for('company_profile'))
+        
+    return render_template('company_profile.html', company=company)
 @app.route('/company/dashboard')
 def company_dashboard():
     if session.get('role') != 'company':
@@ -520,7 +538,7 @@ def company_update_app_status(app_id):
         return redirect(url_for('company_dashboard'))
         
     new_status = request.form.get('status')
-    if new_status in ['Shortlisted', 'Selected', 'Rejected', 'Applied']:
+    if new_status in ['Shortlisted', 'Interview', 'Selected', 'Placed', 'Rejected', 'Applied']:
         application.status = new_status
         db.session.commit()
         flash(f'Application status updated to {new_status}.', 'success')
@@ -531,7 +549,17 @@ def company_student_profile(student_id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
     student = Student.query.get_or_404(student_id)
-    return render_template('company_student_profile.html', student=student)
+    company_id = session.get('user_id')
+    applications = Application.query.join(PlacementDrive).filter(Application.student_id == student.id, PlacementDrive.company_id == company_id).all()
+    return render_template('company_student_profile.html', student=student, applications=applications)
+
+@app.route('/admin/student/<int:student_id>')
+def admin_student_profile(student_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+    student = Student.query.get_or_404(student_id)
+    applications = Application.query.filter_by(student_id=student.id).order_by(Application.application_date.desc()).all()
+    return render_template('admin_student_profile.html', student=student, applications=applications)
 
 if __name__ == '__main__':
     app.run(debug=True)

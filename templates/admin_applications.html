@@ -28,12 +28,14 @@
                             <td>{{ app.drive.company.name }}</td>
                             <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
                             <td>
-                                {% if app.status == 'Selected' %}
-                                <span class="badge bg-success shadow-sm">Selected</span>
+                                {% if app.status == 'Selected' or app.status == 'Placed' %}
+                                <span class="badge bg-success shadow-sm">{{ app.status }}</span>
                                 {% elif app.status == 'Rejected' %}
                                 <span class="badge bg-danger shadow-sm">Rejected</span>
                                 {% elif app.status == 'Shortlisted' %}
-                                <span class="badge bg-info shadow-sm">Shortlisted</span>
+                                <span class="badge bg-info text-dark shadow-sm">Shortlisted</span>
+                                {% elif app.status == 'Interview' %}
+                                <span class="badge bg-warning text-dark shadow-sm">Interview</span>
                                 {% else %}
                                 <span class="badge bg-secondary shadow-sm">{{ app.status }}</span>
                                 {% endif %}

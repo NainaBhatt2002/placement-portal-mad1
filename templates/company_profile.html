@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Company Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-4">Company Profile</h3>
+                    <form method="POST" action="/company/profile">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Company Name</label>
+                            <input type="text" class="form-control" value="{{ company.name }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email Address</label>
+                            <input type="email" class="form-control" value="{{ company.email }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">HR Contact Name / Info</label>
+                            <input type="text" name="hr_contact" class="form-control" value="{{ company.hr_contact }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Industry (Optional)</label>
+                            <input type="text" name="industry" class="form-control" value="{{ company.industry or '' }}" placeholder="IT, Finance, Healthcare...">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted">Website (Optional)</label>
+                            <input type="url" name="website" class="form-control" value="{{ company.website or '' }}" placeholder="https://www.company.com">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

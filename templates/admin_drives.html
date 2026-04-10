@@ -27,8 +27,8 @@
                             <td>{{ drive.job_title }}</td>
                             <td>{{ drive.application_deadline.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
-                                {% if drive.status == 'Approved' %}
-                                <span class="badge bg-success shadow-sm">Approved</span>
+                                {% if drive.status == 'Active' %}
+                                <span class="badge bg-success shadow-sm">Active</span>
                                 {% elif drive.status == 'Pending' %}
                                 <span class="badge bg-warning text-dark shadow-sm">Pending</span>
                                 {% else %}
@@ -44,6 +44,8 @@
                                     <form action="{{ url_for('reject_drive', drive_id=drive.id) }}" method="POST">
                                         <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm">Reject</button>
                                     </form>
+                                    {% else %}
+                                        <span class="text-muted small">Processed</span>
                                     {% endif %}
                                 </div>
                             </td>

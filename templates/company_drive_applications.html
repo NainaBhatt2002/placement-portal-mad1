@@ -39,9 +39,11 @@
                                 {% if app.status == 'Applied' %}
                                 <span class="badge bg-secondary">Applied</span>
                                 {% elif app.status == 'Shortlisted' %}
-                                <span class="badge bg-primary">Shortlisted</span>
-                                {% elif app.status == 'Selected' %}
-                                <span class="badge bg-success">Selected</span>
+                                <span class="badge bg-info text-dark">Shortlisted</span>
+                                {% elif app.status == 'Interview' %}
+                                <span class="badge bg-warning text-dark">Interview</span>
+                                {% elif app.status == 'Selected' or app.status == 'Placed' %}
+                                <span class="badge bg-success">{{ app.status }}</span>
                                 {% elif app.status == 'Rejected' %}
                                 <span class="badge bg-danger">Rejected</span>
                                 {% else %}
@@ -53,7 +55,9 @@
                                     <select name="status" class="form-select form-select-sm me-2" style="width: auto;">
                                         <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
                                         <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                        <option value="Interview" {% if app.status == 'Interview' %}selected{% endif %}>Interview</option>
                                         <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected</option>
+                                        <option value="Placed" {% if app.status == 'Placed' %}selected{% endif %}>Placed</option>
                                         <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
                                     </select>
                                     <button type="submit" class="btn btn-sm btn-primary">Update</button>

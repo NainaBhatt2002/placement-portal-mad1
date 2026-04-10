@@ -37,7 +37,7 @@
                             <td>{{ student.contact }}</td>
                             <td>
                                 {% if student.resume_path %}
-                                <a href="/static/{{ student.resume_path }}" target="_blank" class="text-decoration-none fw-semibold">View</a>
+                                <a href="/uploads/resumes/{{ student.resume_path }}" target="_blank" class="text-decoration-none fw-semibold">View</a>
                                 {% else %}
                                 <span class="text-muted">N/A</span>
                                 {% endif %}
@@ -49,8 +49,9 @@
                                 <span class="badge bg-success">Active</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <form action="{{ url_for('toggle_student_blacklist', student_id=student.id) }}" method="POST">
+                            <td class="d-flex align-items-center gap-2">
+                                <a href="/admin/student/{{ student.id }}" class="btn btn-sm btn-outline-info shadow-sm">Profile</a>
+                                <form action="{{ url_for('toggle_student_blacklist', student_id=student.id) }}" method="POST" class="m-0">
                                     <button type="submit" class="btn btn-sm shadow-sm {% if student.is_blacklisted %}btn-success{% else %}btn-outline-danger{% endif %}">
                                         {% if student.is_blacklisted %}
                                         Activate
