@@ -1,6 +1,6 @@
 body {
   font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
-  background-color: #ffffff;
+  background-color: #f4f7fa !important;
   color: #23272c;
   min-height: 100vh;
   display: flex;
@@ -9,4 +9,10 @@ body {
 
 .fw-black {
   font-weight: 900 !important;
+}
+
+.navbar-custom {
+  background: #2563eb !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }

@@ -1,9 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -46,7 +47,7 @@ class Student(db.Model):
     applications = db.relationship('Application', backref='student', lazy=True, cascade="all, delete-orphan")
 
 class PlacementDrive(db.Model):
-    """Also acts as the Job Position table"""
+    # this is also for jobs
     __tablename__ = 'placement_drive'
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
@@ -72,7 +73,7 @@ class Application(db.Model):
     placement = db.relationship('Placement', backref='application', uselist=False, cascade="all, delete-orphan")
 
 class Placement(db.Model):
-    """Records final job offerings linked directly to an application"""
+    # this keeps record of hired students
     __tablename__ = 'placement'
     id = db.Column(db.Integer, primary_key=True)
     application_id = db.Column(db.Integer, db.ForeignKey('application.id'), unique=True, nullable=False)

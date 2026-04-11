@@ -15,118 +15,137 @@
 </head>
 
 <body>
-  {% if session.get('role') == 'admin' and request.endpoint not in ['login', 'register'] %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  {% set show_sidebar = session.get('role') and request.endpoint not in ['login', 'register'] %}
+  
+  {% if show_sidebar %}
+  <!-- for mobile top bar -->
+  <nav class="navbar navbar-expand-lg navbar-custom d-lg-none sticky-top shadow-sm">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold fs-4" href="/admin/dashboard">CareerConnect</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar"
-        aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+      <a class="navbar-brand text-white fw-black tracking-tight" href="#">CareerConnect</a>
+      <button class="navbar-toggler border-white border-opacity-25" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
       </button>
-      <div class="collapse navbar-collapse" id="adminNavbar">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/dashboard">Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/students">Manage Students</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/companies">Manage Companies</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/drives">Manage Drives</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/applications">Manage Applications</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
-          </li>
-        </ul>
-      </div>
     </div>
   </nav>
-  {% endif %}
 
-  {% if session.get('role') == 'company' and request.endpoint not in ['login', 'register'] %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold fs-4" href="/company/dashboard">CareerConnect</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#companyNavbar"
-        aria-controls="companyNavbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="companyNavbar">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="/company/dashboard">Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/company/profile">Company Profile</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/company/drive/new">Post New Job</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
-          </li>
-        </ul>
-      </div>
+  <aside class="collapse d-lg-block sidebar navbar-custom text-white shadow-lg border-0" id="sidebarMenu">
+    <div class="d-flex flex-column p-4 h-100">
+      <a href="{% if session.get('role') == 'admin' %}/admin/dashboard{% elif session.get('role') == 'company' %}/company/dashboard{% else %}/student/dashboard{% endif %}" class="d-none d-lg-flex align-items-center mb-2 text-white text-decoration-none">
+        <span class="fs-3 fw-black tracking-tight">CareerConnect</span>
+      </a>
+    
+    <!-- top links for side bar -->
+    <ul class="nav nav-pills flex-column mb-auto w-100 gap-2 overflow-y-auto" style="margin-top: 1.5rem;">
+      {% if session.get('role') == 'admin' %}
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'admin_dashboard' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/admin/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint in ['manage_students', 'admin_student_profile'] %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/admin/students">Manage Students</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'manage_companies' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/admin/companies">Manage Companies</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'manage_drives' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/admin/drives">Manage Drives</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'manage_applications' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/admin/applications">Manage Applications</a>
+        </li>
+      {% elif session.get('role') == 'company' %}
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint in ['company_dashboard', 'company_drive_applications', 'company_student_profile'] %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/company/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'company_post_drive' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/company/drive/new">Post New Job</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'company_profile' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/company/profile">Company Profile</a>
+        </li>
+      {% elif session.get('role') == 'student' %}
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'student_dashboard' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/student/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'student_jobs' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/student/jobs">Find Jobs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'student_applications' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/student/applications">My Applications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 fw-medium {% if request.endpoint == 'student_profile' %}active bg-light bg-opacity-25 text-white rounded-3{% else %}text-white text-opacity-75{% endif %}" href="/student/profile">My Profile</a>
+        </li>
+      {% endif %}
+    </ul>
+    
+    <!-- logout button at the bottom -->
+    <div class="border-top border-light border-opacity-25 pt-4 mt-auto">
+      <a href="/logout" class="nav-link px-3 py-2 text-white fw-bold d-flex align-items-center rounded-3 shadow-sm transition" style="background: rgba(255,255,255,0.15)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Logout
+      </a>
     </div>
-  </nav>
+    
+  </div>
+  </aside>
   {% endif %}
 
-  {% if session.get('role') == 'student' and request.endpoint not in ['login', 'register'] %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold fs-4" href="/student/dashboard">CareerConnect</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#studentNavbar"
-        aria-controls="studentNavbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="studentNavbar">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="/student/dashboard">Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/student/profile">My Profile</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/student/jobs">Find Jobs</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/student/applications">My Applications</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  {% endif %}
-
-  <div class="main-content">
+  <!-- main part of the website -->
+  <main class="main-content flex-grow-1 min-vh-100 d-flex flex-column {% if show_sidebar %}ms-lg-auto{% endif %}" {% if show_sidebar %}style="width: calc(100% - 280px); transition: margin 0.3s ease-in-out;"{% endif %}>
+    <!-- laptop bar if needed -->
+    {% if show_sidebar %}
+    <style>
+      @media (min-width: 992px) {
+        .sidebar {
+          position: fixed !important;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 100 !important;
+          width: 280px !important;
+        }
+        .main-content {
+          margin-left: 280px !important;
+          width: calc(100% - 280px) !important;
+        }
+      }
+      @media (max-width: 991.98px) {
+        .main-content {
+          margin-left: 0 !important;
+          width: 100% !important;
+        }
+        .sidebar {
+          width: 100% !important;
+          position: relative !important;
+        }
+      }
+    </style>
+    {% endif %}
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="flash-messages">
+    <div class="container-fluid px-3 px-md-4 mt-4 flash-messages">
       {% for category, message in messages %}
-      <div class="flash {{ category }}">{{ message }}</div>
+        {% set alert_class = 'alert-info' %}
+        {% if category == 'error' %}
+          {% set alert_class = 'alert-danger' %}
+        {% elif category == 'success' %}
+          {% set alert_class = 'alert-success' %}
+        {% endif %}
+        <div class="alert {{ alert_class }} alert-dismissible fade show shadow-sm" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
       {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
 
-    {% block content %}{% endblock %}
-  </div>
+    <div class="flex-grow-1 p-3 p-md-4">
+      {% block content %}{% endblock %}
+    </div>
+    
+  </main>
 </body>
 
 </html>

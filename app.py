@@ -1,3 +1,4 @@
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -9,7 +10,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-#config
+# my settings
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'ourlittlesecret'
@@ -18,15 +19,25 @@ app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 5 MB limit
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Initialize the db
+# start the database
 db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import User
+    return User.query.get(int(user_id))
+
 
 def setup_database():
     with app.app_context():
-        # Create all tables programmatically
+        # make the tables
         db.create_all()
         
-        # Creating Admin 
+        # make a default admin user
         user_exists = User.query.filter_by(role='admin').first()
         if not user_exists:
             admin_user = User(name='admin', email='admin@admin.com', password=generate_password_hash('adminpassword'), role='admin')
@@ -120,6 +131,7 @@ def login():
 
         if user and check_password_hash(user.password, password):
             if user.role == 'admin':
+                login_user(user)
                 session['user_id'] = user.admin_profile.id
                 session['role'] = 'admin'
                 return redirect(url_for('admin_dashboard'))
@@ -129,6 +141,7 @@ def login():
                 if getattr(student, 'is_blacklisted', False):
                     flash('Your account has been blacklisted. Please contact administration.', 'error')
                     return redirect(url_for('login'))
+                login_user(user)
                 session['user_id'] = student.id
                 session['role'] = 'student'
                 return redirect(url_for('student_dashboard'))
@@ -141,12 +154,14 @@ def login():
                 if not company.is_approved:
                     flash('Your account is pending admin approval.', 'error')
                     return redirect(url_for('login'))
+                login_user(user)
                 session['user_id'] = company.id
                 session['role'] = 'company'
                 return redirect(url_for('company_dashboard'))
                 
-        # Legacy behavior check for plain text admin password if needed
+        # check if it is the old admin password
         elif user and user.password == password and user.role == 'admin':
+            login_user(user)
             session['user_id'] = user.admin_profile.id
             session['role'] = 'admin'
             return redirect(url_for('admin_dashboard'))
@@ -156,9 +171,11 @@ def login():
         
     return render_template('login.html')
 
-# Admin routes
+# pages for admin
 
 @app.route('/admin/approve_company/<int:company_id>', methods=['POST'])
+
+@login_required
 def approve_company(company_id):
     if session.get('role') != 'admin':
         flash('Unauthorized access.', 'error')
@@ -174,6 +191,8 @@ def approve_company(company_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/dashboard')
+
+@login_required
 def admin_dashboard():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -192,6 +211,8 @@ def admin_dashboard():
                             total_applications=total_applications)
 
 @app.route('/admin/reject_company/<int:company_id>', methods=['POST'])
+
+@login_required
 def reject_company(company_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -203,6 +224,8 @@ def reject_company(company_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/approve_drive/<int:drive_id>', methods=['POST'])
+
+@login_required
 def approve_drive(drive_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -213,6 +236,8 @@ def approve_drive(drive_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/reject_drive/<int:drive_id>', methods=['POST'])
+
+@login_required
 def reject_drive(drive_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -223,6 +248,8 @@ def reject_drive(drive_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/students')
+
+@login_required
 def manage_students():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -240,6 +267,8 @@ def manage_students():
     return render_template('admin_students.html', students=students, q=q)
 
 @app.route('/admin/toggle_student_blacklist/<int:student_id>', methods=['POST'])
+
+@login_required
 def toggle_student_blacklist(student_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -249,6 +278,8 @@ def toggle_student_blacklist(student_id):
     return redirect(url_for('manage_students'))
 
 @app.route('/admin/companies')
+
+@login_required
 def manage_companies():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -265,6 +296,8 @@ def manage_companies():
     return render_template('admin_companies.html', companies=companies, q=q)
 
 @app.route('/admin/toggle_company_blacklist/<int:company_id>', methods=['POST'])
+
+@login_required
 def toggle_company_blacklist(company_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -274,6 +307,8 @@ def toggle_company_blacklist(company_id):
     return redirect(url_for('manage_companies'))
 
 @app.route('/admin/drives')
+
+@login_required
 def manage_drives():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -281,6 +316,8 @@ def manage_drives():
     return render_template('admin_drives.html', drives=drives)
 
 @app.route('/admin/applications')
+
+@login_required
 def manage_applications():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
@@ -289,13 +326,16 @@ def manage_applications():
 
 @app.route('/logout')
 def logout():
+    logout_user()
     session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
-#Student routes
+# pages for students
 
 @app.route('/student/dashboard')
+
+@login_required
 def student_dashboard():
     if session.get('role') != 'student':
         flash('Unauthorized access or please log in.', 'error')
@@ -320,6 +360,8 @@ def student_dashboard():
                            recent_applications=recent_applications)
 
 @app.route('/student/profile', methods=['GET', 'POST'])
+
+@login_required
 def student_profile():
     if session.get('role') != 'student':
         return redirect(url_for('login'))
@@ -336,7 +378,7 @@ def student_profile():
                 original_filename = secure_filename(resume_file.filename)
                 resume_filename = f"{uuid.uuid4().hex}_{original_filename}"
                 resume_file.save(os.path.join(app.config['UPLOAD_FOLDER'], resume_filename))
-                # Optional: remove old resume if it exists
+                # delete old resume if it is there
                 if student.resume_path:
                     old_path = os.path.join(app.config['UPLOAD_FOLDER'], student.resume_path)
                     if os.path.exists(old_path):
@@ -353,6 +395,8 @@ def student_profile():
     return render_template('student_profile.html', student=student)
 
 @app.route('/student/jobs')
+
+@login_required
 def student_jobs():
     if session.get('role') != 'student':
         return redirect(url_for('login'))
@@ -369,13 +413,15 @@ def student_jobs():
         )
     drives = query.all()
     
-    # Get IDs of drives student has already applied to
+    # see what jobs the student already applied for
     student_id = session.get('user_id')
     applied_drive_ids = [a.drive_id for a in Application.query.filter_by(student_id=student_id).all()]
     
     return render_template('student_jobs.html', drives=drives, applied_drive_ids=applied_drive_ids, q=q)
 
 @app.route('/student/apply/<int:drive_id>', methods=['POST'])
+
+@login_required
 def student_apply(drive_id):
     if session.get('role') != 'student':
         return redirect(url_for('login'))
@@ -403,6 +449,8 @@ def student_apply(drive_id):
     return redirect(url_for('student_applications'))
 
 @app.route('/student/applications')
+
+@login_required
 def student_applications():
     if session.get('role') != 'student':
         return redirect(url_for('login'))
@@ -411,15 +459,19 @@ def student_applications():
     return render_template('student_applications.html', applications=applications)
 
 @app.route('/uploads/resumes/<filename>')
+
+@login_required
 def serve_resume(filename):
     if session.get('role') not in ['student', 'company', 'admin']:
         return redirect(url_for('login'))
 
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-#Company routes
+# pages for companies
 
 @app.route('/company/profile', methods=['GET', 'POST'])
+
+@login_required
 def company_profile():
     if session.get('role') != 'company':
         return redirect(url_for('login'))
@@ -436,6 +488,8 @@ def company_profile():
         
     return render_template('company_profile.html', company=company)
 @app.route('/company/dashboard')
+
+@login_required
 def company_dashboard():
     if session.get('role') != 'company':
         flash('Unauthorized access or please log in.', 'error')
@@ -468,6 +522,8 @@ def company_dashboard():
     )
 
 @app.route('/company/drive/new', methods=['GET', 'POST'])
+
+@login_required
 def company_post_drive():
     if session.get('role') != 'company':
         return redirect(url_for('login'))
@@ -485,7 +541,7 @@ def company_post_drive():
         eligibility_criteria = request.form.get('eligibility_criteria')
         deadline_str = request.form.get('application_deadline')
         
-        # Validations
+        # check if everything is filled
         if not job_title or not job_description or not deadline_str:
             flash('Required fields are missing.', 'error')
             return redirect(url_for('company_post_drive'))
@@ -515,6 +571,8 @@ def company_post_drive():
     return render_template('company_post_drive.html')
 
 @app.route('/company/drive/<int:drive_id>/status', methods=['POST'])
+
+@login_required
 def company_update_drive_status(drive_id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
@@ -531,6 +589,8 @@ def company_update_drive_status(drive_id):
     return redirect(url_for('company_dashboard'))
 
 @app.route('/company/drive/<int:drive_id>/applications')
+
+@login_required
 def company_drive_applications(drive_id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
@@ -543,6 +603,8 @@ def company_drive_applications(drive_id):
     return render_template('company_drive_applications.html', drive=drive, applications=applications)
 
 @app.route('/company/application/<int:app_id>/status', methods=['POST'])
+
+@login_required
 def company_update_app_status(app_id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
@@ -559,6 +621,8 @@ def company_update_app_status(app_id):
     return redirect(url_for('company_drive_applications', drive_id=application.drive_id))
 
 @app.route('/company/student/<int:student_id>')
+
+@login_required
 def company_student_profile(student_id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
@@ -568,6 +632,8 @@ def company_student_profile(student_id):
     return render_template('company_student_profile.html', student=student, applications=applications)
 
 @app.route('/admin/student/<int:student_id>')
+
+@login_required
 def admin_student_profile(student_id):
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
