@@ -570,6 +570,56 @@ def company_post_drive():
         
     return render_template('company_post_drive.html')
 
+@app.route('/company/drive/<int:drive_id>/edit', methods=['GET', 'POST'])
+@login_required
+def company_edit_drive(drive_id):
+    if session.get('role') != 'company':
+        return redirect(url_for('login'))
+        
+    company = Company.query.get(session.get('user_id'))
+    if not company or not company.is_approved:
+        return redirect(url_for('login'))
+        
+    drive = PlacementDrive.query.get_or_404(drive_id)
+    # verify ownership
+    if drive.company_id != company.id:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('company_dashboard'))
+        
+    if request.method == 'POST':
+        job_title = request.form.get('job_title')
+        job_description = request.form.get('job_description')
+        skills_required = request.form.get('skills_required')
+        experience_required = request.form.get('experience_required')
+        salary_range = request.form.get('salary_range')
+        eligibility_criteria = request.form.get('eligibility_criteria')
+        deadline_str = request.form.get('application_deadline')
+        
+        if not job_title or not job_description or not deadline_str:
+            flash('Required fields are missing.', 'error')
+            return redirect(url_for('company_edit_drive', drive_id=drive_id))
+            
+        try:
+            deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format.', 'error')
+            return redirect(url_for('company_edit_drive', drive_id=drive_id))
+            
+        # update fields
+        drive.job_title = job_title
+        drive.job_description = job_description
+        drive.skills_required = skills_required
+        drive.experience_required = experience_required
+        drive.salary_range = salary_range
+        drive.eligibility_criteria = eligibility_criteria
+        drive.application_deadline = deadline
+        
+        db.session.commit()
+        flash('Job position updated successfully.', 'success')
+        return redirect(url_for('company_dashboard'))
+        
+    return render_template('company_post_drive.html', drive=drive)
+
 @app.route('/company/drive/<int:drive_id>/status', methods=['POST'])
 
 @login_required

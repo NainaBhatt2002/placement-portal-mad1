@@ -99,19 +99,26 @@
                                         </a>
                                     </td>
                                     <td>
-                                        {% if drive.status in ['Active', 'Closed'] %}
-                                        <form action="/company/drive/{{ drive.id }}/status" method="POST"
-                                            class="d-inline">
-                                            {% if drive.status == 'Active' %}
-                                            <input type="hidden" name="status" value="Closed">
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Close
-                                                Job</button>
-                                            {% else %}
-                                            <input type="hidden" name="status" value="Active">
-                                            <button type="submit" class="btn btn-sm btn-outline-success">Re-open /
-                                                Activate</button>
+                                        {% if drive.status in ['Active', 'Closed', 'Pending'] %}
+                                        <div class="d-flex gap-2">
+                                            <a href="/company/drive/{{ drive.id }}/edit"
+                                                class="btn btn-sm btn-outline-primary">Edit</a>
+
+                                            {% if drive.status in ['Active', 'Closed'] %}
+                                            <form action="/company/drive/{{ drive.id }}/status" method="POST"
+                                                class="d-inline">
+                                                {% if drive.status == 'Active' %}
+                                                <input type="hidden" name="status" value="Closed">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">Close
+                                                    Job</button>
+                                                {% else %}
+                                                <input type="hidden" name="status" value="Active">
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Re-open /
+                                                    Activate</button>
+                                                {% endif %}
+                                            </form>
                                             {% endif %}
-                                        </form>
+                                        </div>
                                         {% endif %}
                                     </td>
                                 </tr>

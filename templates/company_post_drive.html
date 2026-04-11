@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Post New Job{% endblock %}
+{% block title %}{% if drive %}Edit Job{% else %}Post New Job{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4 my-auto">
@@ -8,50 +8,50 @@
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-4">
                 <div class="card-header bg-white p-4 pb-0 border-0">
-                    <h3 class="mb-0 text-primary">Post New Job Position</h3>
-                    <p class="text-muted">Fill out the details below to create a new placement drive / job position.</p>
+                    <h3 class="mb-0 text-primary">{% if drive %}Edit Job Position{% else %}Post New Job Position{% endif %}</h3>
+                    <p class="text-muted">{% if drive %}Update the details of your existing job posting below.{% else %}Fill out the details below to create a new placement drive / job position.{% endif %}</p>
                 </div>
                 <div class="card-body p-4">
-                    <form action="/company/drive/new" method="POST">
+                    <form action="{% if drive %}/company/drive/{{ drive.id }}/edit{% else %}/company/drive/new{% endif %}" method="POST">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Job Title *</label>
-                            <input type="text" name="job_title" class="form-control" placeholder="e.g. Software Engineer" required>
+                            <input type="text" name="job_title" class="form-control" placeholder="e.g. Software Engineer" value="{{ drive.job_title if drive else '' }}" required>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Job Description *</label>
-                            <textarea name="job_description" class="form-control" rows="4" placeholder="Describe the responsibilities and role" required></textarea>
+                            <textarea name="job_description" class="form-control" rows="4" placeholder="Describe the responsibilities and role" required>{{ drive.job_description if drive else '' }}</textarea>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Skills Required</label>
-                                <input type="text" name="skills_required" class="form-control" placeholder="e.g. Python, Flask, React">
+                                <input type="text" name="skills_required" class="form-control" placeholder="e.g. Python, Flask, React" value="{{ drive.skills_required if drive else '' }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Experience Required</label>
-                                <input type="text" name="experience_required" class="form-control" placeholder="e.g. 0-2 years, Fresher">
+                                <input type="text" name="experience_required" class="form-control" placeholder="e.g. 0-2 years, Fresher" value="{{ drive.experience_required if drive else '' }}">
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Salary Range / CTC</label>
-                                <input type="text" name="salary_range" class="form-control" placeholder="e.g. 8-12 LPA">
+                                <input type="text" name="salary_range" class="form-control" placeholder="e.g. 8-12 LPA" value="{{ drive.salary_range if drive else '' }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Application Deadline *</label>
-                                <input type="date" name="application_deadline" class="form-control" required>
+                                <input type="date" name="application_deadline" class="form-control" value="{{ drive.application_deadline.strftime('%Y-%m-%d') if drive else '' }}" required>
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-bold">Eligibility Criteria</label>
-                            <textarea name="eligibility_criteria" class="form-control" rows="2" placeholder="e.g. Minimum 60% in B.Tech"></textarea>
+                            <textarea name="eligibility_criteria" class="form-control" rows="2" placeholder="e.g. Minimum 60% in B.Tech">{{ drive.eligibility_criteria if drive else '' }}</textarea>
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">Submit Job Posting</button>
+                            <button type="submit" class="btn btn-primary btn-lg">{% if drive %}Update Job Posting{% else %}Submit Job Posting{% endif %}</button>
                             <a href="/company/dashboard" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
