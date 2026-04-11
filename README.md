@@ -1,84 +1,98 @@
-# PLACEMENT PORTAL SYSTEM
+CAREERCONNECT - PLacement Portal Application (Modern Application Development I)
 
-A full-stack web application built using Flask that streamlines the placement process for students and administrators. The platform enables students to explore opportunities, apply for jobs, and track their application status, while providing administrators with tools to manage the entire workflow efficiently.
+A comprehensive, full-stack web application built with Flask to streamline the recruitment and placement process for educational institutions. The platform facilitates seamless interaction between students, companies, and administrators, ensuring a transparent and efficient hiring workflow.
 
-### FEATURES
+#KEY FEATURES
 
-### Student
+#FOR STUDENTS
+Secure Authentication: Register and log in with email and password to access a personalized dashboard.
 
-* Register and log in securely
-* Browse available job opportunities
-* Apply to companies
-* Track application status
+Profile Management: Maintain an up-to-date professional profile, including contact details, education history, and specialized skills.
 
-### Admin
+Resume Management: Upload and update resumes in PDF format, which are then made available to potential employers.
 
-* Add, update, and delete job postings
-* Manage student records
-* View applications
-* Oversee placement activities
+Job Discovery: Browse and search active job postings using filters for company name, job title, or required skills.
 
-## Tech Stack
+Application Tracking: Apply to multiple jobs and monitor the real-time status of applications, from initial submission to final selection.
 
-* Backend: Flask (Python)
-* Database: SQLite
-* Frontend: HTML, CSS, Bootstrap
-* ORM: SQLAlchemy
+#FOR COMPANIES
+Job Posting Management: Create, edit, and manage job drives with detailed descriptions, eligibility criteria, and application deadlines.
 
-## Project Structure
+Applicant Review: Directly access student profiles and view uploaded resumes to identify the best talent for specific roles.
 
-placement-portal/
-│── app.py
-│── models.py
-│── templates/
-│── static/
-│── instance/
-│   └── placement.db
-│── requirements.txt
-│── README.md
+Hiring Pipeline: Update applicant statuses through various stages, including Shortlisted, Interview, Selected, or Rejected.
 
-## Installation and Setup
+Company Profile: Manage public-facing information such as HR contact details, industry focus, and company website.
 
-### 1. Clone the repository
+#FOR ADMINISTRATORS
+System Oversight: Monitor global statistics including total students, registered companies, and overall application volume.
 
-git clone https://github.com/your-username/placement-portal.git
-cd placement-portal
+Approval Workflow: Maintain quality control by reviewing and approving new company registrations and job postings before they are visible to students.
 
-### 2. Create a virtual environment
+Account Management: Search for specific users and manage their access by blacklisting or activating student and company accounts as needed.
+
+Centralized Database: Access a global view of all placement drives and application histories across the entire system.
+
+#TECH STACK
+Backend: Python 3 with the Flask web framework.
+
+Database: SQLite with SQLAlchemy ORM for efficient data modeling and queries.
+
+Security: Password hashing via Werkzeug to ensure user data protection.
+
+Authentication: Flask-Login for secure session management and role-based access control.
+
+Frontend: Responsive UI built with HTML5, Custom CSS, and Bootstrap 5.
+
+#PROJECT STRUCTURE
+placement-portal-mad1-main/
+├── app.py              #Core application logic, routes, and authentication
+├── models.py           #SQLAlchemy database schema and relationships
+├── requirements.txt    #List of required Python packages and versions
+├── static/
+│   └── styles.css      #Custom interface styling and layout rules
+├── templates/          #Jinja2 HTML templates for all user roles
+│   ├── admin_*.html    #Administrative management views
+│   ├── company_*.html  #Employer-facing dashboards and forms
+│   └── student_*.html  #Student interface and job search views
+└── uploads/            #Secure storage directory for student resumes
+
+#INSTALLATION & SETUP
+1. Clone the Repository
+
+git clone https://github.com/NainaBhatt2002/placement-portal-mad1.git
+cd placement-portal-mad1
+
+2. Initialize Virtual Environment
 
 python -m venv venv
-source venv/bin/activate and On Windows: venv\Scripts\activate
 
-### 3. Install dependencies
+venv\Scripts\activate 
+
+3. Install Dependencies
 
 pip install -r requirements.txt
 
-### 4. Run the application
+4. Run the Application
 
 python app.py or flask run
 
-## Usage
+The server will start at http://127.0.0.1:5000/. A default administrator account is automatically generated upon the first run for system setup:
 
-Open your browser and go to: http://127.0.0.1:5000/ 
+#ADMIN DETAILS
+Email: admin@admin.com
+Username: admin
+Password: adminpassword
 
-You can register as a student or log in as an administrator to begin using the platform.
+#CONFIGURATION NOTE
+File Uploads: The application is configured with a MAX_CONTENT_LENGTH of 5 MB for file uploads to maintain server performance.
 
-## Screenshots
+Resume Format: To ensure consistency for recruiters, the system exclusively accepts PDF formats for student resumes.
 
-Include screenshots of key pages such as the login page, dashboard, and job listings.
+#DEVELOPED BY:
 
-## Future Improvements
+Author: Naina Bhatt
+Program: BS in Data Science and Applications
+Institution: Indian Institute of Technology Madras (IITM)
 
-* Implement secure password hashing
-* Add email notifications
-* Enable resume uploads
-* Improve user interface and overall user experience
-
-## Contributing
-
-Contributions are welcome. You can fork the repository and submit a pull request with your changes.
-
-## Author
-
-Naina Bhatt
-IIT Madras BS Degree Program
+This project was completed as part of the Modern Application Development 1 (MAD 1) course requirements.
